@@ -1,0 +1,27 @@
+{
+	"build_systems":
+	[
+		{
+			"cmd":
+			[
+				"msbuild",
+				"/m",
+				"unrealfrogs.sln",
+				"/p:Configuration=Development Editor",
+				"/p:Platform=Win64"
+			],
+			"file_regex": "\\s*(.+)\\(([0-9]+)\\):\\s()(.+)\\[.+\\]$",
+			"name": "Windows - Compile Project",
+			"working_dir": "${project_path}"
+		}
+	],
+	"folders":
+	[
+		{
+			"path": "Config"
+		},
+		{
+			"path": "Source"
+		}
+	]
+}
