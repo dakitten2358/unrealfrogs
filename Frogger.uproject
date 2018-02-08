@@ -3,6 +3,16 @@
 	"EngineAssociation": "4.18",
 	"Category": "",
 	"Description": "",
+	"Modules": [
+		{
+			"Name": "Frogger",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
+	],
 	"Plugins": [
 		{
 			"Name": "ActorSequence",
