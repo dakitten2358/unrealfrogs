@@ -93,7 +93,8 @@ bool ASwipePlayerController::GetWorldspaceLocation(const FVector& screenLocation
 		if (auto pawn = GetPawn())
 		{
 			planeOrigin = pawn->GetActorLocation();
-			auto locationOnPlane = FMath::LinePlaneIntersection(lineStart, lineEnd, planeOrigin, FVector::UpVector);
+			FVector planeNormal = pawn->GetActorUpVector();
+			auto locationOnPlane = FMath::LinePlaneIntersection(lineStart, lineEnd, planeOrigin, planeNormal);
 			worldLocation = locationOnPlane;
 			return true;
 		}
