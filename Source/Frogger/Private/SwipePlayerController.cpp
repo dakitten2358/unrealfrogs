@@ -60,6 +60,7 @@ void ASwipePlayerController::SwipeEnded(ETouchIndex::Type fingerIndex, FVector l
 
 ESwipeDirection ASwipePlayerController::FindNearestCardinalDirection(const FVector& directionVector) const
 {
+	// loop over the directions to find the nearest direction
 	auto nearestDirection = ESwipeDirection::SD_None;
 	auto closestDistanceSquared = MAX_flt;
 	for (const auto& p : DirectionMap)
