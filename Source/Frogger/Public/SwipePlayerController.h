@@ -29,13 +29,11 @@ protected:
 	virtual void SetupInputComponent() override;
 	
 public:
-	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="Swipe Input (RAW)"))
-	void SwipeInputRaw(FVector Origin, FVector Destination, ESwipeDirection Direction);
+	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName="Swipe Input (Screen)"))
+	void SwipeInputRaw(FVector Origin, FVector Destination, ESwipeDirection Direction, ETouchIndex::Type TouchIndex);
 
-	/*
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Swipe Input"))
-	void SwipeInput(FVector InputVector, ESwipeDirection Direction);
-	*/
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Swipe Input (World)"))
+	void SwipeInput(FVector WorldOrigin, FVector WorldDestination, FVector WorldDirection, ESwipeDirection Direction, ETouchIndex::Type TouchIndex);
 
 private:
 	void SwipeBegan(ETouchIndex::Type fingerIndex, FVector location);

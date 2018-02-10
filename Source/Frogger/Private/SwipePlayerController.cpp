@@ -42,7 +42,16 @@ void ASwipePlayerController::SwipeEnded(ETouchIndex::Type fingerIndex, FVector l
 		auto cardinalDirection = FindNearestCardinalDirection(direction);
 
 		// send out the raw input, just in case someone wants it
-		SwipeInputRaw(initialLocation, location, cardinalDirection);
+		SwipeInputRaw(initialLocation, location, cardinalDirection, fingerIndex);
+
+		FVector worldInitialLocation, worldFinalLocation;
+		if (GetWorldspaceLocation(initialLocation, worldInitialLocation) && GetWorldspaceLocation(location, worldFinalLocation))
+		{
+			// send the world space stuff
+			auto worldDirection = worldFinalLocation - worldInitialLocation;
+			worldDirection.Normalize();
+			SwipeInput(worldInitialLocation, worldFinalLocation, worldDirection, cardinalDirection, fingerIndex);
+		}
 				
 		// make sure we clear our the key we're using to track this touch
 		RecordedTouchBegins.Remove(fingerIndex);
