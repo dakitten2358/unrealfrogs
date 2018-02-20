@@ -12,6 +12,9 @@ ALane::ALane(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitiali
 	PrimaryActorTick.bCanEverTick = true;
 
 	DespawnArea = ObjectInitializer.CreateDefaultSubobject<UBoxComponent>(this, TEXT("StartArea"));
+	check(DespawnArea);
+
+	DespawnArea->OnComponentBeginOverlap.AddDynamic(this, &ALane::OnOverlapBegin);
 }
 
 // Called when the game starts or when spawned
@@ -21,6 +24,8 @@ void ALane::BeginPlay()
 
 	const bool isLooping = true;
 	GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ALane::SpawnCollidingActor, TimeBetweenSpawns, isLooping);
+
+	
 }
 
 void ALane::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -45,5 +50,13 @@ void ALane::SpawnCollidingActor()
 			newActor->SetOwner(this);
 			UGameplayStatics::FinishSpawningActor(newActor, SpawnTransform);
 		}
+	}
+}
+
+void ALane::OnOverlapBegin(class UPrimitiveComponent* thisComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != nullptr && OtherActor != this)
+	{
+		OtherActor->Destroy();
 	}
 }
