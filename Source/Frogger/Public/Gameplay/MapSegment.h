@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "MapSegment.generated.h"
 
+
 UCLASS()
 class FROGGER_API AMapSegment : public AActor
 {
@@ -20,6 +21,9 @@ public:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Gameplay")
 	class UBoxComponent* StartArea;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay")
+	TArray<class ALane*> Lanes;
 
 protected:
 	// Called when the game starts or when spawned

@@ -10,8 +10,14 @@ AMapSegment::AMapSegment(const FObjectInitializer& ObjectInitializer) : Super(Ob
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	Mesh = ObjectInitializer.CreateDefaultSubobject<UStaticMeshComponent>(this, TEXT("Mesh"));
 	StartArea = ObjectInitializer.CreateDefaultSubobject<UBoxComponent>(this, TEXT("StartArea"));
+	RootComponent = StartArea;
+
+	Mesh = ObjectInitializer.CreateDefaultSubobject<UStaticMeshComponent>(this, TEXT("Mesh"));
+	if (Mesh != nullptr)
+	{
+		Mesh->SetupAttachment(RootComponent);
+	}
 }
 
 // Called when the game starts or when spawned
