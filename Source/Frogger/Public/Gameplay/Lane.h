@@ -28,8 +28,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	float TimeBetweenSpawns;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay, Meta = (MakeEditWidget = true))
-	FTransform SpawnTransform;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
+	class USceneComponent* SpawnTransform;
 
 	UFUNCTION(BlueprintNativeEvent, Category = Gameplay)
 	void OnFirstTimeEnteredByPlayer();
@@ -44,12 +44,7 @@ private:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-#if WITH_EDITORONLY_DATA
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
 
 	FTimerHandle SpawnTimerHandle;
 
@@ -57,7 +52,7 @@ private:
 	void SpawnCollidingActor();
 
 	UFUNCTION()
-	void OnDespawnOverlapBegin(class UPrimitiveComponent* thisComponent, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnDespawnOverlap(class UPrimitiveComponent* thisComponent, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex/*, bool bFromSweep, const FHitResult& SweepResult*/);
 
 	UFUNCTION()
 	void OnLaneOverlapBegin(class UPrimitiveComponent* thisComponent, class AActor* OtherActor, class UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

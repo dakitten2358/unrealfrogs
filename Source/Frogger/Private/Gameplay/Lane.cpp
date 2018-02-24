@@ -13,19 +13,29 @@ ALane::ALane(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitiali
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	RootComponent = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Root"));
+
 	// Event is fired when the player enters the Lane (scoring, etc)
 	LaneArea = ObjectInitializer.CreateDefaultSubobject<UBoxComponent>(this, TEXT("LaneArea"));
-	check(LaneArea);
-	LaneArea->OnComponentBeginOverlap.AddDynamic(this, &ALane::OnLaneOverlapBegin);
+	LaneArea->SetupAttachment(RootComponent);
 	LaneArea->ShapeColor = FColor::Green;
-	RootComponent = LaneArea;
-
+	LaneArea->SetBoxExtent(FVector(100, 500, 100));
+	LaneArea->SetRelativeLocation(FVector(100, 0, 100));
+	LaneArea->OnComponentBeginOverlap.AddDynamic(this, &ALane::OnLaneOverlapBegin);
+	
 	// Objects entering the despawn area will be destroyed
 	DespawnArea = ObjectInitializer.CreateDefaultSubobject<UBoxComponent>(this, TEXT("DespawnArea"));
 	check(DespawnArea);
-	DespawnArea->SetupAttachment(LaneArea);
+	DespawnArea->SetupAttachment(RootComponent);
 	DespawnArea->ShapeColor = FColor::Red;
-	DespawnArea->OnComponentBeginOverlap.AddDynamic(this, &ALane::OnDespawnOverlapBegin);
+	DespawnArea->SetBoxExtent(FVector(100, 100, 100));
+	DespawnArea->SetRelativeLocation(FVector(100, -1000, 100));
+	DespawnArea->OnComponentEndOverlap.AddDynamic(this, &ALane::OnDespawnOverlap);
+
+	SpawnTransform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("SpawnTransform"));
+	SpawnTransform->SetupAttachment(RootComponent);
+	SpawnTransform->SetRelativeLocation(FVector(100, 1000, 0));
+	SpawnTransform->SetRelativeRotation(FQuat(FVector::UpVector, FMath::DegreesToRadians(-90)));
 
 #if WITH_EDITORONLY_DATA
 	ArrowComponent = CreateEditorOnlyDefaultSubobject<UArrowComponent>(TEXT("Arrow"));
@@ -34,11 +44,8 @@ ALane::ALane(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitiali
 		ArrowComponent->ArrowColor = FColor(150, 200, 255);
 		ArrowComponent->bTreatAsASprite = true;
 		ArrowComponent->SpriteInfo.Category = TEXT("Gameplay");
-		//ArrowComponent->SpriteInfo.DisplayName = FName("Spawner");
-		ArrowComponent->SetupAttachment(LaneArea);
 		ArrowComponent->bIsScreenSizeScaled = true;
-
-		ArrowComponent->SetRelativeTransform(SpawnTransform);
+		ArrowComponent->SetupAttachment(SpawnTransform);
 	}
 #endif
 }
@@ -68,18 +75,20 @@ void ALane::SpawnCollidingActor()
 {
 	if (ActorToSpawn != nullptr)
 	{
-		auto newActor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ActorToSpawn, SpawnTransform));
+		auto spawnTransform = SpawnTransform->GetComponentTransform();
+		auto newActor = Cast<AActor>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ActorToSpawn, spawnTransform));
 		if (newActor)
 		{
 			newActor->SetOwner(this);
-			UGameplayStatics::FinishSpawningActor(newActor, SpawnTransform);
+			UGameplayStatics::FinishSpawningActor(newActor, spawnTransform);
 		}
 	}
 }
 
-void ALane::OnDespawnOverlapBegin(UPrimitiveComponent* thisComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ALane::OnDespawnOverlap(UPrimitiveComponent* thisComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex/*, bool bFromSweep, const FHitResult& SweepResult*/)
 {
-	if (OtherActor != nullptr && OtherActor != this)
+	// destroy the actor if we're the owner
+	if (OtherActor != nullptr && OtherActor != this && OtherActor->GetOwner() == this)
 	{
 		OtherActor->Destroy();
 	}
@@ -87,8 +96,10 @@ void ALane::OnDespawnOverlapBegin(UPrimitiveComponent* thisComponent, AActor* Ot
 
 void ALane::OnLaneOverlapBegin(UPrimitiveComponent* thisComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// need to check to see if it's the player, and the player hasn't entered before
 	if (OtherActor != nullptr && OtherActor != this)
 	{
+		// mark the player as having entered
 		OnFirstTimeEnteredByPlayer();
 	}
 }
@@ -97,16 +108,3 @@ void ALane::OnFirstTimeEnteredByPlayer_Implementation()
 {
 
 }
-
-#if WITH_EDITORONLY_DATA
-void ALane::PostEditChangeProperty(FPropertyChangedEvent& propertyChangedEvent)
-{
-	Super::PostEditChangeProperty(propertyChangedEvent);
-
-	FName propertyName = (propertyChangedEvent.Property != NULL) ? propertyChangedEvent.Property->GetFName() : NAME_None;
-	if (propertyName == GET_MEMBER_NAME_CHECKED(ALane, SpawnTransform))
-	{
-		ArrowComponent->SetRelativeTransform(SpawnTransform);
-	}
-}
-#endif

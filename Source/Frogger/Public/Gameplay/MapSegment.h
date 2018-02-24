@@ -22,7 +22,13 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Gameplay")
 	class UBoxComponent* StartArea;
 
-	UPROPERTY(EditAnywhere, Category = "Gameplay")
+	UPROPERTY(VisibleDefaultsOnly, Category = "Gameplay")
+	class UCameraComponent* Camera;
+
+	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
+	bool bInitialSegment;
+
+	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
 	TArray<class ALane*> Lanes;
 
 protected:
