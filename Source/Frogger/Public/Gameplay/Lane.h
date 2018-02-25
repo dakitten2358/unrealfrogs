@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Delegate.h"
+#include "Delegates/DelegateCombinations.h"
 #include "Lane.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerEnteredLaneSignature, class APlayerController*, Player, class ALane*, Lane);
 
 UCLASS()
 class FROGGER_API ALane : public AActor
@@ -31,9 +35,8 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = Gameplay)
 	class USceneComponent* SpawnTransform;
 
-	UFUNCTION(BlueprintNativeEvent, Category = Gameplay)
-	void OnFirstTimeEnteredByPlayer();
-	void OnFirstTimeEnteredByPlayer_Implementation();
+	UPROPERTY(BlueprintAssignable, Category = "Collision")
+	FPlayerEnteredLaneSignature OnPlayerEnteredLane;
 
 private:
 #if WITH_EDITORONLY_DATA

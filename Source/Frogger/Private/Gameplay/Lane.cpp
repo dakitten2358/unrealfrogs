@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/ArrowComponent.h"
 #include "DisplayDebugHelpers.h"
+#include "GameFramework/Pawn.h"
 
 // Sets default values
 ALane::ALane(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -99,12 +100,12 @@ void ALane::OnLaneOverlapBegin(UPrimitiveComponent* thisComponent, AActor* Other
 	// need to check to see if it's the player, and the player hasn't entered before
 	if (OtherActor != nullptr && OtherActor != this)
 	{
-		// mark the player as having entered
-		OnFirstTimeEnteredByPlayer();
+		auto pawn = Cast<APawn>(OtherActor);
+		auto controller = pawn ? Cast<APlayerController>(pawn->GetController()) : nullptr;
+
+		if (pawn && controller)
+		{ 
+			OnPlayerEnteredLane.Broadcast(controller, this);
+		}
 	}
-}
-
-void ALane::OnFirstTimeEnteredByPlayer_Implementation()
-{
-
 }

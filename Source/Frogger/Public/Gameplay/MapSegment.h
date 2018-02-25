@@ -22,23 +22,42 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Gameplay")
 	class UBoxComponent* StartArea;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = "Collision")
+	class UBoxComponent* BlockingArea;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Gameplay")
 	class UCameraComponent* Camera;
 
-	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Gameplay")
 	bool bInitialSegment;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Gameplay")
+	bool bFinalSegment;
 
 	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
 	TArray<class ALane*> Lanes;
 
+	UFUNCTION(BlueprintPure)
+	class AFroggerGameModeBase* GetFroggerGameMode() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	void ResetOnPlayerDeath();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
+	void OnStartAreaBeginOverlap(class UPrimitiveComponent* thisComponent, class AActor* OtherActor, class UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void OnPlayerEnteredLane(class APlayerController* Player, class ALane* Lane);
+
+private:
+	TMap<class ALane*, bool> HasLaneBeenSeen;
+
+	void PlayerEnteredSegment(class APlayerController* Player);
 	
 	
 };

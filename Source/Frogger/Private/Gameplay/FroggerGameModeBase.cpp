@@ -6,13 +6,13 @@
 #include "GameFramework/PlayerController.h"
 #include "Gameplay/MapSegment.h"
 #include "EngineUtils.h"
+#include "Private/FroggerCameraControllerComponent.h"
 
 AFroggerGameModeBase::AFroggerGameModeBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, CurrentMapSegment(nullptr)
-	, hasSetCamera(false)
 {
-
+	CameraController = ObjectInitializer.CreateDefaultSubobject<UFroggerCameraControllerComponent>(this, TEXT("CameraController"));
 }
 
 AMapSegment* AFroggerGameModeBase::FindStartingSegment() const
@@ -29,20 +29,47 @@ AMapSegment* AFroggerGameModeBase::FindStartingSegment() const
 	return nullptr;
 }
 
-void AFroggerGameModeBase::PlayerEnteredMapSegment(APlayerController* Player, AMapSegment* MapSegment)
+void AFroggerGameModeBase::SetCameraToSegment(APlayerController* Player, AMapSegment* MapSegment)
+{
+	if (Player && MapSegment)
+	{
+		CameraController->SetCamera(Player, MapSegment);
+	}
+}
+
+void AFroggerGameModeBase::PlayerDied_Implementation(APlayerController* Player)
+{
+	// do stuff, adjust life, etc
+
+	// reset all map segments
+	for (TActorIterator<AActor> It(GetWorld(), AMapSegment::StaticClass()); It; ++It)
+	{
+		AMapSegment* MapSegment = Cast<AMapSegment>(*It);
+		if (MapSegment && !MapSegment->IsPendingKill())
+		{
+			MapSegment->ResetOnPlayerDeath();
+		}
+	}
+}
+
+void AFroggerGameModeBase::PlayerEnteredMapSegment_Implementation(APlayerController* Player, AMapSegment* MapSegment)
 {
 	// keep track of which segment we're in
 	CurrentMapSegment = MapSegment;
 
 	// adjust camera
-	if (Player)
-	{
-		if (!hasSetCamera)
-		{
-			hasSetCamera = true;
-			Player->SetViewTargetWithBlend(this, 0.0f, VTBlend_EaseInOut, 1.0F);
-		}
-		else
-			Player->SetViewTargetWithBlend(this, 2.0f, VTBlend_EaseInOut, 1.0F);
-	}
+	SetCameraToSegment(Player, MapSegment);
+}
+
+void AFroggerGameModeBase::PlayerEnteredLane_Implementation(APlayerController* Player, AMapSegment* MapSegment, ALane* Lane)
+{
+	// score?
+}
+
+AMapSegment* AFroggerGameModeBase::GetCurrentMapSegment() const
+{
+	if (CurrentMapSegment == nullptr)
+		return FindStartingSegment();
+
+	return CurrentMapSegment;
 }

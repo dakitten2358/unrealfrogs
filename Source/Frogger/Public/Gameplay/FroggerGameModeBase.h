@@ -20,12 +20,26 @@ public:
 	UFUNCTION(BlueprintPure, Category = Gameplay)
 	class AMapSegment* FindStartingSegment() const;
 
-	UFUNCTION(BlueprintCallable, Category = Gameplay)
+	// shouldn't be blueprint callbable, but we'll leave it so until we 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Gameplay)
+	void PlayerDied(class APlayerController* Player);
+
+	UFUNCTION(BlueprintNativeEvent, Category = Gameplay)
 	void PlayerEnteredMapSegment(class APlayerController* Player, class AMapSegment* MapSegment);
 
-	UPROPERTY(VisibleInstanceOnly, Category = Gameplay)
-	class AMapSegment* CurrentMapSegment;
+	UFUNCTION(BlueprintNativeEvent, Category = Gameplay)
+	void PlayerEnteredLane(class APlayerController* Player, class AMapSegment* MapSegment, class ALane* Lane);
+
+	UFUNCTION(BlueprintCallable, Category = Camera)
+	void SetCameraToSegment(class APlayerController* Player, class AMapSegment* MapSegment);
+
+	UFUNCTION(BlueprintPure, Category = Gameplay)
+	class AMapSegment* GetCurrentMapSegment() const;
 
 private:
-	bool hasSetCamera;
+	UPROPERTY()
+	class UFroggerCameraControllerComponent* CameraController;
+
+	UPROPERTY()
+	class AMapSegment* CurrentMapSegment;
 };
