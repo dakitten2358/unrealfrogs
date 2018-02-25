@@ -7,12 +7,16 @@
 #include "Gameplay/MapSegment.h"
 #include "EngineUtils.h"
 #include "Private/FroggerCameraControllerComponent.h"
+#include "Gameplay/FroggerGameState.h"
+#include "Gameplay/FroggerPlayerState.h"
 
 AFroggerGameModeBase::AFroggerGameModeBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-	, CurrentMapSegment(nullptr)
 {
 	CameraController = ObjectInitializer.CreateDefaultSubobject<UFroggerCameraControllerComponent>(this, TEXT("CameraController"));
+
+	GameStateClass = AFroggerGameState::StaticClass();
+	PlayerStateClass = AFroggerPlayerState::StaticClass();
 }
 
 AMapSegment* AFroggerGameModeBase::FindStartingSegment() const
@@ -55,7 +59,9 @@ void AFroggerGameModeBase::PlayerDied_Implementation(APlayerController* Player)
 void AFroggerGameModeBase::PlayerEnteredMapSegment_Implementation(APlayerController* Player, AMapSegment* MapSegment)
 {
 	// keep track of which segment we're in
-	CurrentMapSegment = MapSegment;
+	auto gameState = GetGameState<AFroggerGameState>();
+	if (gameState)
+		gameState->CurrentMapSegment = MapSegment;
 
 	// adjust camera
 	SetCameraToSegment(Player, MapSegment);
@@ -64,12 +70,18 @@ void AFroggerGameModeBase::PlayerEnteredMapSegment_Implementation(APlayerControl
 void AFroggerGameModeBase::PlayerEnteredLane_Implementation(APlayerController* Player, AMapSegment* MapSegment, ALane* Lane)
 {
 	// score?
+	auto playerState = GetPlayerState<AFroggerPlayerState>(Player);
+	if (playerState)
+	{
+		playerState->Score += 10;
+	}
 }
 
 AMapSegment* AFroggerGameModeBase::GetCurrentMapSegment() const
 {
-	if (CurrentMapSegment == nullptr)
+	auto gameState = GetGameState<AFroggerGameState>();
+	if (gameState == nullptr || gameState->CurrentMapSegment == nullptr)
 		return FindStartingSegment();
 
-	return CurrentMapSegment;
+	return gameState->CurrentMapSegment;
 }
