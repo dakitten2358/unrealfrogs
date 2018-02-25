@@ -40,6 +40,9 @@ private:
 	UPROPERTY()
 	class UFroggerCameraControllerComponent* CameraController;
 
-	UPROPERTY()
-	class AMapSegment* CurrentMapSegment;
+	template<typename PlayerStateType> 
+	PlayerStateType* GetPlayerState(class APlayerController* Player) const
+	{
+		return Cast<PlayerStateType>(Player->PlayerState);
+	}
 };
